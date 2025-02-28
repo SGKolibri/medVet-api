@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  STUDENT
+  TEACHER
+  SECRETARY
+}
+
+model Student {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  cpf           String   @unique
+  password_hash String
+  email         String?  @unique
+  registration  String   @unique
+  course        String?
+  shift         String?
+  period        String?
+  phone         String?
+  status_delete Boolean  @default(false)
+  role          Role     @default(STUDENT)
+  created_at    DateTime @default(now())
+
+  @@map("students") //trocar o nome da tabela
+}
+
+model Teacher {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  cpf           String   @unique
+  password_hash String
+  email         String?  @unique
+  registration  String   @unique
+  course        String?
+  shift         String?
+  phone         String?
+  status_delete Boolean @default(false)
+  role          Role     @default(TEACHER)
+  created_at    DateTime @default(now())
+  enchiridion  Enchiridion[]
+  prescription Prescription[]
+
+  @@map("teachers")
+}
+
+model Secretary {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  cpf           String   @unique
+  password_hash String
+  email         String?  @unique
+  phone         String?
+  status_delete Boolean @default(false)
+  role          Role     @default(SECRETARY)
+  created_at    DateTime @default(now())
+
+  @@map("secretarys")
+}
+
+model Tutor {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  sequence      String   @unique
+  name          String
+  cpf           String?   @unique
+  email         String?   @unique
+  phone         String
+  adress        String?
+  status_delete Boolean @default(false)
+  animals       Animal[]
+  consult       Consult[]
+  created_at    DateTime  @default(now())
+
+  @@map("tutors")
+}
+
+model Animal {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sequence    String   @unique
+  name         String
+  created_at   DateTime @default(now())
+  species      String
+  race         String?
+  gender       String
+  age          String
+  coat         String?
+  status_delete Boolean @default(false)
+  tutor        Tutor    @relation(fields: [tutor_id], references: [id])
+  tutor_id     String   @db.ObjectId
+  enchiridion  Enchiridion[]
+  prescription Prescription[]
+  weight Weight[]
+  attachements Attachment[]
+  @@map("animals")
+}
+
+model Consult {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sequence    String   @unique
+  date        DateTime
+  nameAnimal  String
+  phone       String
+  species     String
+  description String?
+  done        Boolean  @default(false)
+  tutor       Tutor    @relation(fields: [tutor_id], references: [id])
+  tutor_id    String   @db.ObjectId
+  created_at  DateTime @default(now())
+
+  @@map("consults")
+}
+
+
+model Enchiridion {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  sequence    String   @unique
+  animal       Animal    @relation(fields: [animal_id], references: [id])
+  animal_id    String   @db.ObjectId
+  teacher       Teacher    @relation(fields: [teacher_id], references: [id])
+  teacher_id    String   @db.ObjectId
+  date        DateTime
+  history     String?
+  reason_consult String?
+  deworming     String?
+  date_deworming  String?
+  temperature String?
+  frequency_cardiac   String?
+  frequency_respiratory String?
+  dehydration String?
+  lymph_node String?
+  type_mucous  String?
+  whats_mucous  String?
+  skin_annex String?
+  system_circulatory String?
+  system_respiratory String?
+  system_digestive String?
+  system_locomotor String?
+  system_nervous  String?
+  system_genitourinary String?
+  others String?
+  complementary_exams String?
+  diagnosis String?
+  trataments String?
+  observations String?
+  status_delete Boolean @default(false)
+  created_at  DateTime @default(now())
+  vaccination   Vaccination[]
+  weight       Weight[] @relation("EnchiridionWeights")
+
+
+  @@map("enchiridion")
+}
+
+model Vaccination {
+  id String   @id @default(auto()) @map("_id") @db.ObjectId
+  date String
+  name String
+  enchiridion  Enchiridion    @relation(fields: [enchiridion_id], references: [id])
+  enchiridion_id    String   @db.ObjectId
+
+  @@map("vaccination")
+}
+
+
+model Prescription {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  status_delete Boolean @default(false)
+  created_at  DateTime @default(now())
+  animal       Animal    @relation(fields: [animal_id], references: [id])
+  animal_id    String   @db.ObjectId
+  teacher       Teacher    @relation(fields: [teacher_id], references: [id])
+  teacher_id    String   @db.ObjectId
+  medication Medication[]
+
+  @@map("prescription")
+}
+
+model Medication{
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  use_type String
+  pharmacy String?
+  unit String
+  measurement String
+  description String
+  prescription_id String @db.ObjectId
+  prescription Prescription @relation(fields: [prescription_id], references: [id])
+
+
+  @@map("medication")
+}
+
+model Weight {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  weight Float
+  created_at  DateTime @default(now())
+  animal_id String @db.ObjectId
+  enchiridion_id String @db.ObjectId @unique
+  animal Animal @relation(fields: [animal_id], references: [id])
+  enchiridion Enchiridion @relation("EnchiridionWeights", fields: [enchiridion_id], references: [id])
+
+  @@map("weights")
+}
+
+model Attachment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  animal_id String @db.ObjectId
+  url_archive String
+  name String
+  animal Animal @relation(fields: [animal_id], references: [id])
+}
