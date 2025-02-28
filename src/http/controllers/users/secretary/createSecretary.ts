@@ -11,9 +11,7 @@ export async function createSecretary(
   const registerBodySchema = z.object({
     name: z.string(),
     email: z.union([z.literal(""), z.string().email()]).nullable(),
-    cpf: z.string().refine(Validation.isValidCPF, {
-      message: "CPF inválido",
-    }),
+    cpf: z.string(),
     password: z.string(),
     phone: z.string().nullable(),
   });

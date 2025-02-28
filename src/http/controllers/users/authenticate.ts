@@ -9,9 +9,7 @@ export async function authenticate(
   reply: FastifyReply
 ) {
   const authenticateBodySchema = z.object({
-    cpf: z.string().refine(Validation.isValidCPF, {
-      message: "CPF inválido",
-    }),
+    cpf: z.string(),
     password: z.string().min(6),
   });
 

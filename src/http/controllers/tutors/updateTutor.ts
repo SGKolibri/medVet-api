@@ -10,9 +10,7 @@ export async function updateTutor(request: FastifyRequest, reply: FastifyReply) 
 	const updateBodySchema = z.object({
 		id: z.string(),
 		name: z.string(),
-		cpf: z.string().refine(Validation.isValidCPF, {
-			message: "CPF inválido",
-		}),
+		cpf: z.string(),
 		adress: z.string().nullable(),
 		phone: z.string().refine(Validation.isValidPhoneNumber, {
 			message: "Numero de contato inválido",
