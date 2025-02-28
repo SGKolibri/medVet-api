@@ -61,6 +61,7 @@ export async function authenticate(
       .send({
         user,
         token,
+        // refreshToken,
       });
   } catch (err) {
     if (err instanceof InvalidCredentialsError) {
