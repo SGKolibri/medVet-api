@@ -92,7 +92,7 @@ model Animal {
   age          String
   coat         String?
   status_delete Boolean @default(false)
-  tutor        Tutor    @relation(fields: [tutor_id], references: [id])
+  tutor        Tutor    @relation(fields: [tutor_id], references: [id], onDelete: Cascade) // onDelete: Cascade -> deleta os animais do tutor
   tutor_id     String   @db.ObjectId
   enchiridion  Enchiridion[]
   prescription Prescription[]
@@ -110,7 +110,7 @@ model Consult {
   species     String
   description String?
   done        Boolean  @default(false)
-  tutor       Tutor    @relation(fields: [tutor_id], references: [id])
+  tutor       Tutor    @relation(fields: [tutor_id], references: [id], onDelete: Cascade)
   tutor_id    String   @db.ObjectId
   created_at  DateTime @default(now())
 
@@ -121,9 +121,9 @@ model Consult {
 model Enchiridion {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   sequence    String   @unique
-  animal       Animal    @relation(fields: [animal_id], references: [id])
+  animal       Animal    @relation(fields: [animal_id], references: [id], onDelete: Cascade)
   animal_id    String   @db.ObjectId
-  teacher       Teacher    @relation(fields: [teacher_id], references: [id])
+  teacher       Teacher    @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
   teacher_id    String   @db.ObjectId
   date        DateTime
   history     String?
@@ -162,7 +162,7 @@ model Vaccination {
   id String   @id @default(auto()) @map("_id") @db.ObjectId
   date String
   name String
-  enchiridion  Enchiridion    @relation(fields: [enchiridion_id], references: [id])
+  enchiridion  Enchiridion    @relation(fields: [enchiridion_id], references: [id], onDelete: Cascade)
   enchiridion_id    String   @db.ObjectId
 
   @@map("vaccination")
@@ -173,9 +173,9 @@ model Prescription {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   status_delete Boolean @default(false)
   created_at  DateTime @default(now())
-  animal       Animal    @relation(fields: [animal_id], references: [id])
+  animal       Animal    @relation(fields: [animal_id], references: [id], onDelete: Cascade)
   animal_id    String   @db.ObjectId
-  teacher       Teacher    @relation(fields: [teacher_id], references: [id])
+  teacher       Teacher    @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
   teacher_id    String   @db.ObjectId
   medication Medication[]
 
@@ -190,7 +190,7 @@ model Medication{
   measurement String
   description String
   prescription_id String @db.ObjectId
-  prescription Prescription @relation(fields: [prescription_id], references: [id])
+  prescription Prescription @relation(fields: [prescription_id], references: [id], onDelete: Cascade)
 
 
   @@map("medication")
@@ -203,7 +203,7 @@ model Weight {
   animal_id String @db.ObjectId
   enchiridion_id String @db.ObjectId @unique
   animal Animal @relation(fields: [animal_id], references: [id])
-  enchiridion Enchiridion @relation("EnchiridionWeights", fields: [enchiridion_id], references: [id])
+  enchiridion Enchiridion @relation("EnchiridionWeights", fields: [enchiridion_id], references: [id], onDelete: Cascade)
 
   @@map("weights")
 }
@@ -213,5 +213,5 @@ model Attachment {
   animal_id String @db.ObjectId
   url_archive String
   name String
-  animal Animal @relation(fields: [animal_id], references: [id])
+  animal Animal @relation(fields: [animal_id], references: [id], onDelete: Cascade)
 }
