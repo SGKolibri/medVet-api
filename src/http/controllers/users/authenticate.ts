@@ -3,6 +3,7 @@ import { z } from "zod";
 import { makeAuthenticateUseCase } from "@/use-cases/factories/users/make-authenticate-use-case";
 import { InvalidCredentialsError } from "@/use-cases/errors/invalid-credentials-error";
 import { Validation } from "@/utils/validation";
+import { app } from "@/app";
 
 export async function authenticate(
   request: FastifyRequest,
@@ -30,6 +31,7 @@ export async function authenticate(
       {
         sign: {
           sub: user.id,
+          expiresIn: "20m",
         },
       }
     );
@@ -42,7 +44,7 @@ export async function authenticate(
       {
         sign: {
           sub: user.id,
-          expiresIn: "7d", //refresh token expira em 7 dias
+          expiresIn: "30m", 
         },
       }
     );

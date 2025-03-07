@@ -1,35 +1,36 @@
 //controller de recriar um token de usuário
-import { FastifyReply, FastifyRequest } from 'fastify'
+import { FastifyReply, FastifyRequest } from "fastify";
 
 export async function refresh(request: FastifyRequest, reply: FastifyReply) {
-  await request.jwtVerify({ onlyCookie: true })//vai validar se o usuário está autenticado, mas não vai olhar no autorization , bearer, vai olhar nos cookies da requisição
-//com o refresh token válido
-//vai gerar um novo token
+  await request.jwtVerify({ onlyCookie: true }); //vai validar se o usuário está autenticado, mas não vai olhar no autorization , bearer, vai olhar nos cookies da requisição
+  //com o refresh token válido
+  //vai gerar um novo token
 
-const { role } = request.user
+  const { role } = request.user;
 
   const token = await reply.jwtSign(
     { role },
     {
       sign: {
-        sub: request.user.sub,//dados do usuário logado atualmente
+        sub: request.user.sub, //dados do usuário logado atualmente
+        expiresIn: "20m",
       },
-    },
-  )
+    }
+  );
 
   const refreshToken = await reply.jwtSign(
     { role },
     {
       sign: {
         sub: request.user.sub,
-        expiresIn: '7d',
+        expiresIn: "30m",
       },
-    },
-  )
+    }
+  );
 
   return reply
-    .setCookie('refreshToken', refreshToken, {
-      path: '/',
+    .setCookie("refreshToken", refreshToken, {
+      path: "/",
       secure: true,
       sameSite: true,
       httpOnly: true,
@@ -37,5 +38,5 @@ const { role } = request.user
     .status(200)
     .send({
       token,
-    })
+    });
 }

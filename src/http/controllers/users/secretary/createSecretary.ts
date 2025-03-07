@@ -3,6 +3,7 @@ import { z } from "zod";
 import { makeRegisterUseCase } from "@/use-cases/factories/users/secretary/make-create-secretarys";
 import { UserAlreadyExistsError } from "@/use-cases/errors/user-error";
 import { Validation } from "@/utils/validation";
+import { error } from "console";
 
 export async function createSecretary(
   request: FastifyRequest,
@@ -43,7 +44,9 @@ export async function createSecretary(
     });
   } catch (err) {
     if (err instanceof UserAlreadyExistsError) {
-      return reply.status(409).send({ message: err.message });
+      return reply
+        .status(409)
+        .send({ message: "Usuário já existe", error: err.message });
     }
 
     throw err;
