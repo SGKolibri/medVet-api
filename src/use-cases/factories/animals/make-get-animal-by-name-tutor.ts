@@ -3,10 +3,11 @@ import { PrismaTutorsRepository } from "@/repositories/Prisma/prisma-tutors-repo
 import { GetAnimalByNameTutorUseCase } from "@/use-cases/animal/getAnimals";
 
 export function makeGetAnimalByNameTutor() {
-    const prismaAnimalsRepository = new PrismaAnimalsRepository()
-    const prismaTutorRepository = new PrismaTutorsRepository()
-    const useCase = new GetAnimalByNameTutorUseCase(prismaAnimalsRepository, prismaTutorRepository)
-
-    return useCase
+  const prismaAnimalsRepository = new PrismaAnimalsRepository();
+  const prismaTutorRepository = new PrismaTutorsRepository();
+  const useCase = new GetAnimalByNameTutorUseCase(
+    prismaAnimalsRepository,
+    prismaTutorRepository
+  );
+  return useCase;
 }
-

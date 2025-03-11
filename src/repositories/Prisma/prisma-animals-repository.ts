@@ -1,19 +1,16 @@
-import { AnimalRepository } from '@/repositories/animal-repository';
-import { prisma } from '@/lib/prisma'
-import { Prisma } from '@prisma/client'
-
-
+import { AnimalRepository } from "@/repositories/animal-repository";
+import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export class PrismaAnimalsRepository implements AnimalRepository {
-
   async findById(id: string) {
     const animal = await prisma.animal.findUnique({
       where: {
         id,
       },
-    })
+    });
 
-    return animal
+    return animal;
   }
 
   async findBySequence(sequence: string) {
@@ -21,62 +18,66 @@ export class PrismaAnimalsRepository implements AnimalRepository {
       where: {
         sequence,
       },
-    })
+    });
 
-    return user
+    return user;
   }
 
-  async findByNameAgeSpecies(name: string, age: string, species: string, tutor_id: string) {
+  async findByNameAgeSpecies(
+    name: string,
+    age: string,
+    species: string,
+    tutor_id: string
+  ) {
     const user = await prisma.animal.findFirst({
       where: {
         name,
         age,
         species,
-        tutor_id
+        tutor_id,
       },
-    })
+    });
 
-    return user
+    return user;
   }
 
   async getAllAnimals(page: number, numberOfItems: number) {
-    const skipTtens = (page - 1) * numberOfItems
+    const skipTtens = (page - 1) * numberOfItems;
 
     const animal = await prisma.animal.findMany({
       take: numberOfItems,
       skip: skipTtens,
-    })
+    });
 
-    return animal
+    return animal;
   }
 
   async createAnimal(data: Prisma.AnimalUncheckedCreateInput) {
     const animal = await prisma.animal.create({
       data,
-    })
+    });
 
-    return animal.id
+    return animal.id;
   }
 
   async findManyIdTutor(tutor_id: string) {
-
     const allanimals = await prisma.animal.findMany({
       where: {
-        tutor_id: tutor_id
+        tutor_id: tutor_id,
       },
-    })
+    });
 
-    return allanimals
+    return allanimals;
   }
 
   async findByTutor(id: string) {
     const animal = await prisma.animal.findMany({
       where: {
-        tutor_id: id
+        tutor_id: id,
       },
     });
 
-    return animal
+    return animal;
   }
 
   async searchByNameAnimalorSequence(q: string, page: number) {
@@ -88,27 +89,27 @@ export class PrismaAnimalsRepository implements AnimalRepository {
           {
             name: {
               startsWith: queryNormalized,
-              mode: 'insensitive',
+              mode: "insensitive",
             },
           },
           {
             sequence: {
               startsWith: queryNormalized,
-              mode: 'insensitive',
+              mode: "insensitive",
             },
           },
         ],
       },
 
-      take:10,
-      skip: (page- 1) * 10,
+      take: 10,
+      skip: (page - 1) * 10,
     });
 
     return animal;
   }
 
   async sequence(): Promise<string> {
-    let nextSequence = await prisma.animal.count() + 1
+    let nextSequence = (await prisma.animal.count()) + 1;
 
     let sequenceExists = true;
 
@@ -135,8 +136,8 @@ export class PrismaAnimalsRepository implements AnimalRepository {
         id: id,
       },
       data: {
-        status_delete: true
-      }
-    })
+        status_delete: true,
+      },
+    });
   }
 }

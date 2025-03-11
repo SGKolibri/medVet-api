@@ -83,7 +83,7 @@ model Tutor {
 
 model Animal {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  sequence    String   @unique
+  sequence     String   @unique
   name         String
   created_at   DateTime @default(now())
   species      String

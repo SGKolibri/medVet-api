@@ -7,5 +7,13 @@ async function seed() {
 }
 
 async function createAdmin() {
-  //   await prisma.user.upsert({});
+  await prisma.secretary.create({
+    data: {
+      name: "Fernanda Lima",
+      email: "fernanda@example.com",
+      cpf: "992.960.180-56",
+      password_hash: "123456",
+      phone: "123456789",
+    },
+  });
 }
