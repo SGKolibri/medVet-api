@@ -248,9 +248,8 @@ export async function generatePrescriptionPDF(prescription: PrescriptionWithMedi
             .roundedRect(startX, startY, doc.page.width - 100, 80, 5)
             .stroke();
 
-         startY += 100;
+         startY += 150;
             
-         // Coloca a assinatura logo abaixo das observações
          const signatureWidth = 250;
          const signatureX = (doc.page.width - signatureWidth) / 2;
 
@@ -278,27 +277,7 @@ export async function generatePrescriptionPDF(prescription: PrescriptionWithMedi
                align: 'center'
             });
 
-         // Adiciona rodapé a todas as páginas
-         let pageRange = doc.bufferedPageRange();
-
-         for (let i = 0; i < pageRange.count; i++) {
-            doc.switchToPage(i);
-
-            doc.strokeColor(COLORS.NEUTRAL_GRAY)
-               .moveTo(40, doc.page.height - 50)
-               .lineTo(doc.page.width - 40, doc.page.height - 50)
-               .lineWidth(0.5)
-               .stroke();
-
-            doc.fillColor(COLORS.NEUTRAL_GRAY)
-               .fontSize(9)
-               .text(
-                  `Hospital Veterinário - Página ${i + 1} de ${pageRange.count}`,
-                  50,
-                  doc.page.height - 40,
-                  { align: 'center' }
-               );
-         }
+       
 
          doc.end();
       } catch (error) {
