@@ -61,6 +61,8 @@ export class PrismaTutorsRepository implements TutorRepository {
   }
 
   async createTutor(data: Prisma.TutorCreateInput) {
+    console.log("data: ", data);
+
     const highestSequence = await prisma.tutor.findFirst({
       orderBy: {
         sequence: "desc",
@@ -70,13 +72,25 @@ export class PrismaTutorsRepository implements TutorRepository {
       },
     });
 
+    const uniqueData = { ...data };
+    if (!uniqueData.cpf) {
+      uniqueData.cpf = `placeholder-cpf-${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 7)}`;
+    }
+    if (!uniqueData.email) {
+      uniqueData.email = `placeholder-email-${Date.now()}-${Math.random()
+        .toString(36)
+        .substring(2, 7)}`;
+    }
+
     const nextSequence = highestSequence
       ? String(parseInt(highestSequence.sequence) + 1)
       : "1";
 
     const tutor = await prisma.tutor.create({
       data: {
-        ...data,
+        ...uniqueData,
         sequence: nextSequence,
       },
     });
