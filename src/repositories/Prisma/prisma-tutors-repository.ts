@@ -61,8 +61,24 @@ export class PrismaTutorsRepository implements TutorRepository {
   }
 
   async createTutor(data: Prisma.TutorCreateInput) {
+    const highestSequence = await prisma.tutor.findFirst({
+      orderBy: {
+        sequence: "desc",
+      },
+      select: {
+        sequence: true,
+      },
+    });
+
+    const nextSequence = highestSequence
+      ? String(parseInt(highestSequence.sequence) + 1)
+      : "1";
+
     const tutor = await prisma.tutor.create({
-      data,
+      data: {
+        ...data,
+        sequence: nextSequence,
+      },
     });
 
     return tutor;

@@ -12,7 +12,7 @@ export interface EnchiridionRepository {
   findEnchiridionById(id: string): Promise<Enchiridion | null>
 
   updateEnchiridion(id: string, data: Prisma.EnchiridionUncheckedUpdateInput): Promise<Enchiridion>
-  markAsDelete(id: string): any
+  markAsDelete(id: string): any // markAsDelete 
 }
 
 

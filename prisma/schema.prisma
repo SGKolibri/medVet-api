@@ -177,6 +177,7 @@ model Prescription {
   animal_id    String   @db.ObjectId
   teacher       Teacher    @relation(fields: [teacher_id], references: [id], onDelete: Cascade)
   teacher_id    String   @db.ObjectId
+  image         String?
   medication Medication[]
 
   @@map("prescription")
@@ -212,6 +213,7 @@ model Attachment {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   animal_id String @db.ObjectId
   url_archive String
+  
   name String
   animal Animal @relation(fields: [animal_id], references: [id], onDelete: Cascade)
 }

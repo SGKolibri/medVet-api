@@ -2,7 +2,6 @@ import { TutorAlreadyExistsError } from "@/use-cases/errors/tutor-error";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { makeRegisterUseCase } from "@/use-cases/factories/consult/make-create-consult";
-import { Validation } from "@/utils/validation";
 
 export async function createConsult(
   request: FastifyRequest,
@@ -19,6 +18,8 @@ export async function createConsult(
 
   const { nameAnimal, stringDate, description, species, phone, nameTutor } =
     registerBodySchema.parse(request.body);
+
+  console.log("req.body: ", request.body);
 
   try {
     const registerUserCase = makeRegisterUseCase();

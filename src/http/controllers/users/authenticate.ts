@@ -16,6 +16,9 @@ export async function authenticate(
 
   const { cpf, password } = authenticateBodySchema.parse(request.body);
 
+  console.log("cpf", cpf);
+  console.log("password", password);
+
   try {
     const authenticateUseCase = makeAuthenticateUseCase();
 
@@ -44,7 +47,7 @@ export async function authenticate(
       {
         sign: {
           sub: user.id,
-          expiresIn: "30m", 
+          expiresIn: "30m",
         },
       }
     );
@@ -66,6 +69,7 @@ export async function authenticate(
   } catch (err) {
     if (err instanceof InvalidCredentialsError) {
       //se for um erro do erro personalizado
+      console.log("Error authenticate");
       return reply.status(400).send({ message: err.message });
     }
 
