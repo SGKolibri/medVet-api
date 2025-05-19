@@ -13,11 +13,21 @@ import { consultRoutes } from "@/http/controllers/consults/routes";
 import { enchiridionRoutes } from "@/http/controllers/enchiridion/routes";
 import { animalsRoutes } from "@/http/controllers/animals/routes";
 import { attachmentRoutes } from "@/http/controllers/attachement/routes";
+import ExameRoutes from "./module/exame/exame.routes";
 
 import { FastifyReply, FastifyRequest } from "fastify";
 
 import { prescriptionRoutes } from "./http/controllers/prescription/routes";
 import { vaccinationRoutes } from "./http/controllers/vaccination/routes";
+
+declare module "fastify" {
+  export interface FastifyInstance {
+    authenticate: (
+      request: FastifyRequest,
+      reply: FastifyReply
+    ) => Promise<void>;
+  }
+}
 
 export const app = fastify();
 
@@ -31,6 +41,17 @@ app.register(fastifyJwt, {
     expiresIn: "1m", //expiração do token original, 10 min
   },
 });
+
+app.decorate(
+  "authenticate", // name of the decorator
+  async (request: FastifyRequest, reply: FastifyReply) => {
+    try {
+      await request.jwtVerify();
+    } catch (e) {
+      return reply.send(e);
+    }
+  }
+);
 
 app.register(fastifyCookie);
 
@@ -46,6 +67,7 @@ app.register(animalsRoutes);
 app.register(prescriptionRoutes);
 app.register(vaccinationRoutes);
 app.register(attachmentRoutes);
+app.register(ExameRoutes); // Rotas de receita
 
 app.setErrorHandler((error, _, reply) => {
   //função que lida com erros

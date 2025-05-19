@@ -217,3 +217,63 @@ model Attachment {
   name String
   animal Animal @relation(fields: [animal_id], references: [id], onDelete: Cascade)
 }
+
+model Exame {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  // data             DateTime        @default(now())
+  // especie          String
+  // raca             String?
+  // sexo             String?
+  // idade            Int?
+  // peso             Float?
+  // suspeitaClinica  String?
+  // tutor            String?
+  // numeroProntuario String?
+
+
+  hemograma               Boolean @default(false)
+  pesquisaHemoparasitas   Boolean @default(false)
+  metodoHemoparasita      String? 
+  outroHemotologia        String?
+
+  altTGP                  Boolean @default(false)
+  astTGO                  Boolean @default(false)
+  fosfataseAlcalina       Boolean @default(false)
+  ureia                   Boolean @default(false)
+  creatinina              Boolean @default(false)
+  outrosExamesBioquimicos String?
+
+  citologiaMicroscopiaDireta  Boolean @default(false)
+  citologiaMicroscopiaCorada  Boolean @default(false)
+  pesquisaEctoparasitas       Boolean @default(false)
+  outroCitologiaGeral         String?
+
+  urinaliseEAS            Boolean @default(false)
+  urinaliseSedimento      Boolean @default(false)
+  urinaliseOutroMetodo    String?
+
+  coproMetodo             String?
+  coproWilishowsky        Boolean @default(false)
+  coproHoffmann           Boolean @default(false)
+  coproMcMaster           Boolean @default(false)
+  // coproExameDireto       Boolean @default(false)
+  coproOutro              String?
+
+  radiografiaSimples      Boolean @default(false)
+  radiografiaContrastada  Boolean @default(false)
+  outroRadiografia        String?
+  regiaoRadiografia       String?
+  posicao1                String?
+  posicao2                String?
+
+  ultrassonografia        Boolean @default(false)
+  ultrassonografiaDoppler Boolean @default(false)
+  outroUltrassonografia   String?
+
+  culturaBacteriana       Boolean @default(false)
+  culturaFungica          Boolean @default(false)
+  testeAntimicrobianos    Boolean @default(false)
+  outrosExames            String?
+
+  createdAt DateTime @default(now())
+}
