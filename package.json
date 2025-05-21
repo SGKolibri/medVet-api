@@ -41,6 +41,7 @@
     "fastify": "4.26.2",
     "fastify-cors": "6.1.0",
     "fastify-multer": "2.0.3",
+    "fs": "0.0.1-security",
     "install": "0.13.0",
     "jsonwebtoken": "9.0.2",
     "pdfkit": "0.15.0",
