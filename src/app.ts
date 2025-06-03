@@ -19,6 +19,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 
 import { prescriptionRoutes } from "./http/controllers/prescription/routes";
 import { vaccinationRoutes } from "./http/controllers/vaccination/routes";
+import TermoRoutes from "./module/termoResponsabilidade/termo.routes";
 
 declare module "fastify" {
   export interface FastifyInstance {
@@ -67,7 +68,8 @@ app.register(animalsRoutes);
 app.register(prescriptionRoutes);
 app.register(vaccinationRoutes);
 app.register(attachmentRoutes);
-app.register(ExameRoutes); // Rotas de receita
+app.register(ExameRoutes);
+app.register(TermoRoutes);
 
 app.setErrorHandler((error, _, reply) => {
   //função que lida com erros

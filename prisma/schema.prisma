@@ -221,16 +221,6 @@ model Attachment {
 
 model Exame {
   id               String          @id @default(auto()) @map("_id") @db.ObjectId
-  // data             DateTime        @default(now())
-  // especie          String
-  // raca             String?
-  // sexo             String?
-  // idade            Int?
-  // peso             Float?
-  // suspeitaClinica  String?
-  // tutor            String?
-  // numeroProntuario String?
-
 
   hemograma               Boolean @default(false)
   pesquisaHemoparasitas   Boolean @default(false)
@@ -277,4 +267,26 @@ model Exame {
   outrosExames            String?
 
   createdAt DateTime @default(now())
+}
+
+
+model Receita {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  
+  duasVias Boolean @default(false) // se não for duas vias, é uma via só
+  // relação com o animal?
+
+  createdAt DateTime @default(now())
+}
+
+model TermoResponsabilidade {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  nomeResponsavel String
+  cpf             String
+  endereco        String
+  animalId        String @db.ObjectId
+  pdfContent      Bytes?
+  pdfName         String?
+
+  createdAt       DateTime @default(now())
 }
