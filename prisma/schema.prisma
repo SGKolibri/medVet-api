@@ -187,6 +187,7 @@ model Medication{
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   use_type String
   pharmacy String?
+  type String?
   unit String
   measurement String
   description String

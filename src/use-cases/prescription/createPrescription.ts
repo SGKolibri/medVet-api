@@ -52,15 +52,15 @@ export class CreatePrescriptionUseCase {
                 const unit = medicate.unit
                 const measurement = medicate.measurement
                 const description = medicate.description
-
+                const type = medicate.type
                 await this.medicationRepository.createMedication({
                     prescription_id,
                     use_type,
                     pharmacy,
                     unit,
                     measurement,
-                    description
-
+                    description,
+                    type
                 })
             })
         }
