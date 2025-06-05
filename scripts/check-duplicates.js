@@ -3,36 +3,26 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function findDuplicates() {
-  console.log('Verificando dados duplicados que podem causar problemas com índices únicos...');
   
-  // Verificar estudantes
-  console.log('\n=== Estudantes ===');
   await checkDuplicates('student', 'email');
   await checkDuplicates('student', 'cpf');
   await checkDuplicates('student', 'registration');
   
-  // Verificar professores
-  console.log('\n=== Professores ===');
+
   await checkDuplicates('teacher', 'email');
   await checkDuplicates('teacher', 'cpf');
   await checkDuplicates('teacher', 'registration');
   
-  // Verificar secretários
-  console.log('\n=== Secretários ===');
   await checkDuplicates('secretary', 'email');
   await checkDuplicates('secretary', 'cpf');
   
-  // Verificar tutores
-  console.log('\n=== Tutores ===');
   await checkDuplicates('tutor', 'email');
   await checkDuplicates('tutor', 'cpf');
   await checkDuplicates('tutor', 'sequence');
   
-  // Verificar animais
-  console.log('\n=== Animais ===');
+
   await checkDuplicates('animal', 'sequence');
   
-  console.log('\nVerificação concluída.');
 }
 
 async function checkDuplicates(model, field) {

@@ -23,16 +23,10 @@ export async function createExameController(
   reply: FastifyReply
 ) {
   const body = request.body;
-  console.log("Recebendo requisição para criar exame:", {
-    animalId: body.animalId,
-    dataSolicitacao: body.dataSolicitacao,
-    hemograma: body.hemograma,
-    coproWilishowsky: body.coproWilishowsky,
-    // Log outros campos relevantes
-  });
+ 
   
   try {
-    // Check if animal exists when animalId is provided
+
     let animal = null;
     if (body.animalId) {
       animal = await prisma.animal.findUnique({
@@ -50,28 +44,24 @@ export async function createExameController(
         return reply.status(404).send({ error: "Animal não encontrado" });
       }
       
-      console.log("Animal encontrado:", animal);
     }
 
     let pdfRequest: Buffer | undefined;
     let pdfRequestName: string | undefined;
 
-    // Se um arquivo PDF foi enviado manualmente, processar e armazenar
     if (request.body.pdf) {
       const result = await processPdfUpload(request.body.pdf);
       pdfRequest = result.buffer;
       pdfRequestName = result.filename;
     }
 
-    // Convert dataSolicitacao to a Date if it's provided
     let dataSolicitacao = undefined;
     if (body.dataSolicitacao) {
       dataSolicitacao = new Date(body.dataSolicitacao);
     } else {
-      dataSolicitacao = new Date(); // Default to current date if not provided
+      dataSolicitacao = new Date(); 
     }
     
-    // Criar o exame no banco de dados
     const exame = await prisma.exame.create({
       data: {
         animalId: body.animalId,
@@ -122,10 +112,8 @@ export async function createExameController(
       },
     });
     
-    // Se não foi fornecido um PDF manualmente, gerar um PDF automaticamente
     if (!pdfRequest) {
       try {
-        // Preparar dados para geração do PDF
         const exameWithAnimal = {
           ...exame,
           animal: animal ? {
@@ -139,10 +127,8 @@ export async function createExameController(
           } : undefined
         };
         
-        // Gerar PDF
         const generatedPdf = await generateExamRequestPDF(exameWithAnimal);
         
-        // Atualizar o exame com o PDF gerado
         await prisma.exame.update({
           where: { id: exame.id },
           data: {
@@ -151,18 +137,16 @@ export async function createExameController(
           }
         });
         
-        // Atualiza o objeto exame para retornar na response
         exame.pdfRequestName = `solicitacao-exame-${exame.id}.pdf`;
       } catch (pdfError) {
         console.error("Erro ao gerar PDF de solicitação de exame:", pdfError);
-        // Continua mesmo com erro na geração do PDF
       }
     }
 
-    // Return the exam created, excluding the PDF content from the response
+
     return reply.status(201).send({
       ...exame,
-      pdfRequest: undefined, // Exclude the binary data from response
+      pdfRequest: undefined, 
     });
   } catch (error) {
     const errorDetails = error as Error;
@@ -197,10 +181,9 @@ export async function getExamesController(
         pdfRequestName: true,
         hemograma: true,
         pesquisaHemoparasitas: true,
-        // Include other fields but exclude the PDF content itself
         pdfRequest: false,
         createdAt: true,
-        // Include animal information
+      
         animal: {
           select: {
             id: true,
@@ -245,7 +228,6 @@ export async function getExameByIdController(
       return reply.status(404).send({ error: "Exame not found" });
     }
 
-    // Return the exam but exclude the PDF content from the response
     const { pdfRequest, ...exameWithoutPdf } = exame;
     return reply.status(200).send(exameWithoutPdf);
   } catch (error) {
@@ -267,7 +249,6 @@ export async function updateExameController(
   const body = request.body;
 
   try {
-    // Check if the exame exists first
     const existingExame = await prisma.exame.findUnique({
       where: { id },
     });
@@ -276,7 +257,6 @@ export async function updateExameController(
       return reply.status(404).send({ error: "Exame not found" });
     }
 
-    // Check if animal exists when animalId is provided
     if (body.animalId) {
       const animal = await prisma.animal.findUnique({
         where: { id: body.animalId },
@@ -288,14 +268,13 @@ export async function updateExameController(
     }
 
     let pdfRequest: Buffer | undefined;
-    let pdfRequestName: string | undefined;    // Se um arquivo PDF foi enviado, processar e armazenar
+    let pdfRequestName: string | undefined;   
     if (request.body.pdf) {
       const result = await processPdfUpload(request.body.pdf);
       pdfRequest = result.buffer;
       pdfRequestName = result.filename;
     }
 
-    // Convert dataSolicitacao to a Date if it's provided
     let dataSolicitacao = undefined;
     if (body.dataSolicitacao) {
       dataSolicitacao = new Date(body.dataSolicitacao);
@@ -310,7 +289,6 @@ export async function updateExameController(
       },
     });
 
-    // Return the updated exam, excluding the PDF content from the response
     const { pdfRequest: _, ...exameWithoutPdf } = updatedExame;
     return reply.status(200).send(exameWithoutPdf);
   } catch (error) {
@@ -326,7 +304,6 @@ export async function deleteExameController(
   const { id } = request.params;
 
   try {
-    // Check if the exame exists first
     const existingExame = await prisma.exame.findUnique({
       where: { id },
     });
@@ -378,7 +355,6 @@ export async function getExamePdfController(
       return reply.status(404).send({ error: "Exame não encontrado" });
     }
 
-    // Se já existe PDF armazenado, retornar diretamente
     if (exame.pdfRequest) {
       reply.header("Content-Type", "application/pdf");
       reply.header(
@@ -387,11 +363,8 @@ export async function getExamePdfController(
       );
       return reply.send(exame.pdfRequest);
     } 
-    // Se não existe PDF armazenado, gerar um novo
     else {
-      console.log("Gerando PDF para exame que não possui um PDF armazenado");
       
-      // Preparar dados para o PDF
       const exameWithAnimal = {
         ...exame,
         animal: exame.animal ? {
@@ -401,10 +374,8 @@ export async function getExamePdfController(
       };
       
       try {
-        // Gerar o PDF
         const generatedPdf = await generateExamRequestPDF(exameWithAnimal);
         
-        // Atualizar no banco de dados para futuras solicitações
         await prisma.exame.update({
           where: { id: exame.id },
           data: {
@@ -413,7 +384,6 @@ export async function getExamePdfController(
           }
         });
         
-        // Retornar o PDF gerado
         reply.header("Content-Type", "application/pdf");
         reply.header(
           "Content-Disposition",
