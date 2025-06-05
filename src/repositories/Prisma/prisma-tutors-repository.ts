@@ -59,18 +59,11 @@ export class PrismaTutorsRepository implements TutorRepository {
 
     return tutor;
   }
-
   async createTutor(data: Prisma.TutorCreateInput) {
     console.log("data: ", data);
 
-    const highestSequence = await prisma.tutor.findFirst({
-      orderBy: {
-        sequence: "desc",
-      },
-      select: {
-        sequence: true,
-      },
-    });
+    // Não precisamos mais buscar a sequência, pois o campo não é mais obrigatório
+    // O ID será gerado automaticamente pelo Prisma
 
     const uniqueData = { ...data };
     if (!uniqueData.cpf) {
@@ -84,14 +77,13 @@ export class PrismaTutorsRepository implements TutorRepository {
         .substring(2, 7)}`;
     }
 
-    const nextSequence = highestSequence
-      ? String(parseInt(highestSequence.sequence) + 1)
-      : "1";
+    // Usar o método sequence para gerar um número sequencial único se necessário
+    const nextSequence = await this.sequence();
 
     const tutor = await prisma.tutor.create({
       data: {
         ...uniqueData,
-        sequence: nextSequence,
+        sequence: nextSequence, // O campo sequence agora é opcional
       },
     });
 

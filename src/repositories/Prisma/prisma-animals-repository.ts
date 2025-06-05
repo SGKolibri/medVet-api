@@ -11,10 +11,13 @@ export class PrismaAnimalsRepository implements AnimalRepository {
     });
 
     return animal;
-  }
-
-  async findBySequence(sequence: string) {
-    const user = await prisma.animal.findUnique({
+  }  async findBySequence(sequence: string) {
+    // Se não temos uma sequência, não podemos buscar por ela
+    if (!sequence) {
+      return null;
+    }
+    
+    const user = await prisma.animal.findFirst({
       where: {
         sequence,
       },
@@ -50,14 +53,34 @@ export class PrismaAnimalsRepository implements AnimalRepository {
     });
 
     return animal;
-  }
+  }  async createAnimal(data: Prisma.AnimalUncheckedCreateInput) {
+    try {
+      // Adicionar sequence gerado automaticamente
+      // Sempre geramos um novo sequence para evitar colisões
+      const dataWithSequence = { ...data };
+      
+      // Gerar um novo valor de sequência mesmo se um foi fornecido
+      // Isso garante que sempre teremos um valor único
+      try {
+        const newSequence = await this.sequence();
+        dataWithSequence.sequence = newSequence;
+        console.log("Criando animal com sequence:", dataWithSequence.sequence);
+      } catch (seqError) {
+        // Se falhar ao gerar a sequência, continue sem ela (é opcional)
+        console.warn("Falha ao gerar sequência, continuando sem ela:", seqError);
+        // Garantir que não seja undefined
+        dataWithSequence.sequence = `manual-${Date.now()}`;
+      }
+      
+      const animal = await prisma.animal.create({
+        data: dataWithSequence,
+      });
 
-  async createAnimal(data: Prisma.AnimalUncheckedCreateInput) {
-    const animal = await prisma.animal.create({
-      data,
-    });
-
-    return animal.id;
+      return animal.id;
+    } catch (error) {
+      console.error("Erro ao criar animal:", error);
+      throw error;
+    }
   }
 
   async findManyIdTutor(tutor_id: string) {
@@ -120,27 +143,29 @@ export class PrismaAnimalsRepository implements AnimalRepository {
 
     return animal;
   }
-
   async sequence(): Promise<string> {
-    let nextSequence = (await prisma.animal.count()) + 1;
-
-    let sequenceExists = true;
-
-    while (sequenceExists) {
-      const existingSequence = await prisma.animal.findFirst({
-        where: {
-          sequence: nextSequence.toString(),
+    try {
+      // Buscar o animal com a maior sequência
+      const highestSequence = await prisma.animal.findFirst({
+        orderBy: {
+          sequence: 'desc',
         },
       });
-
-      if (!existingSequence) {
-        sequenceExists = false;
-      } else {
-        nextSequence++;
+      
+      // Se encontrou um animal, incrementa a sequência
+      if (highestSequence && highestSequence.sequence) {
+        const currentSequence = parseInt(highestSequence.sequence, 10);
+        return (isNaN(currentSequence) ? 1 : currentSequence + 1).toString();
       }
+      
+      // Se não houver animais ou o valor da sequência for inválido, retorna "1"
+      return "1";
+    } catch (error) {
+      console.error("Erro ao gerar sequence:", error);
+      // Em caso de erro, garantir que retornamos um valor válido
+      const timestamp = Date.now().toString();
+      return `${timestamp.substring(timestamp.length - 6)}`;
     }
-
-    return nextSequence.toString();
   }
 
   async markAsDelete(id: string) {

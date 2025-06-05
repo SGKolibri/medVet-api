@@ -67,7 +67,7 @@ model Secretary {
 
 model Tutor {
   id            String    @id @default(auto()) @map("_id") @db.ObjectId
-  sequence      String   @unique
+  sequence      String?   // Removido @unique e tornado opcional
   name          String
   cpf           String?   @unique
   email         String?   @unique
@@ -83,7 +83,7 @@ model Tutor {
 
 model Animal {
   id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  sequence     String   @unique
+  sequence     String?  // Removido @unique e tornado opcional
   name         String
   created_at   DateTime @default(now())
   species      String
@@ -106,7 +106,7 @@ model Animal {
 
 model Consult {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  sequence    String   @unique
+  sequence    String?  
   date        DateTime
   nameAnimal  String
   phone       String
@@ -123,7 +123,7 @@ model Consult {
 
 model Enchiridion {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  sequence    String   @unique
+  sequence    String?  
   animal       Animal    @relation(fields: [animal_id], references: [id], onDelete: Cascade)
   animal_id    String   @db.ObjectId
   teacher       Teacher    @relation(fields: [teacher_id], references: [id], onDelete: Cascade)

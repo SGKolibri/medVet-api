@@ -3,9 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
 
 export class PrismaConsultsRepository implements ConsultsRepository {
-
   async findBySequence(sequence: string) {
-    const user = await prisma.consult.findUnique({
+    const user = await prisma.consult.findFirst({
       where: {
         sequence,
       },
@@ -13,11 +12,15 @@ export class PrismaConsultsRepository implements ConsultsRepository {
 
     return user
   }
-
   async createConsults(data: Prisma.ConsultUncheckedCreateInput) {
-
+    // Adicionar sequence gerado automaticamente se não foi fornecido
+    const dataWithSequence = { ...data };
+    if (!dataWithSequence.sequence) {
+      dataWithSequence.sequence = await this.sequence();
+    }
+    
     const consult = await prisma.consult.create({
-      data,
+      data: dataWithSequence,
     })
 
     return consult

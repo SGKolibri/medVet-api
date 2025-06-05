@@ -17,11 +17,15 @@ export class PrismaEnchiridionRepository implements EnchiridionRepository {
     return enchiridion
   }
 
-
   async createEnchiridion(data: Prisma.EnchiridionUncheckedCreateInput) {
+    // Adicionar sequence gerado automaticamente se não foi fornecido
+    const dataWithSequence = { ...data };
+    if (!dataWithSequence.sequence) {
+      dataWithSequence.sequence = await this.sequence();
+    }
 
     const enchiridion = await prisma.enchiridion.create({
-      data,
+      data: dataWithSequence,
     })
 
     return enchiridion
@@ -67,9 +71,12 @@ export class PrismaEnchiridionRepository implements EnchiridionRepository {
   }
 
 
-
   async findBySequenceEnchiridion(sequence: string) {
-    const user = await prisma.enchiridion.findUnique({
+    if (!sequence) {
+      return null;
+    }
+    
+    const user = await prisma.enchiridion.findFirst({
       where: {
         sequence: sequence
       },

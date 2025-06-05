@@ -29,11 +29,10 @@ export class CreateAnimalsUsecase {
     age,
     coat,
     tutor_id
-  }: registerusecaserequest): Promise<String> {
-
-    const tutorWithSameId = await this.tutorRepository.findById(tutor_id)
-    const sequence = await this.animalrepository.sequence()
-
+  }: registerusecaserequest): Promise<String> {    const tutorWithSameId = await this.tutorRepository.findById(tutor_id)
+    
+    // A sequência será gerada automaticamente pelo repositório quando necessário
+    // Não precisamos mais obter a sequência aqui
 
     if (!tutorWithSameId) {
       throw new TutorNotExistsError()
@@ -44,9 +43,9 @@ export class CreateAnimalsUsecase {
       throw new AnimalAlreadyExistsError();
     }
 
-
+    // Não passamos a sequência explicitamente, o repositório vai gerenciar isso
     const animal = await this.animalrepository.createAnimal({
-      sequence, name, species, race, gender, age, coat, tutor_id
+      name, species, race, gender, age, coat, tutor_id
     })
 
     return animal

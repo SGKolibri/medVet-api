@@ -21,7 +21,6 @@ export class CreateConsultsUseCase {
     private consultsRepository: ConsultsRepository,
     private tutorRepository: TutorRepository
   ) { }
-
   async execute({
     nameAnimal,
     stringDate,
@@ -32,7 +31,9 @@ export class CreateConsultsUseCase {
   }: RegisterUseCaseRequest): Promise<Consult> {
 
 
-    const sequence = await this.consultsRepository.sequence()
+    // Gerar sequências separadas para tutor e consulta
+    const tutorSequence = await this.tutorRepository.sequence();
+    const consultSequence = await this.consultsRepository.sequence();
 
     const name = nameTutor
 
@@ -45,7 +46,7 @@ export class CreateConsultsUseCase {
 
 
     const tutor = await this.tutorRepository.createTutor({
-      sequence,
+      sequence: tutorSequence,
       name,
       phone
     });
@@ -53,9 +54,9 @@ export class CreateConsultsUseCase {
     const tutor_id = tutor.id
 
     const date = validDate(stringDate)
-
+    
     const consults = await this.consultsRepository.createConsults({
-      sequence,
+      sequence: consultSequence,
       nameAnimal,
       date,
       description,
