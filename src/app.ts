@@ -1,5 +1,4 @@
 import fastify from "fastify";
-
 import fastifyJwt from "@fastify/jwt";
 import fastifyCookie from "@fastify/cookie";
 import fastifyMultipart from "@fastify/multipart";
@@ -20,6 +19,9 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { prescriptionRoutes } from "./http/controllers/prescription/routes";
 import { vaccinationRoutes } from "./http/controllers/vaccination/routes";
 import TermoRoutes from "./module/termoResponsabilidade/termo.routes";
+import TermoInternacaoRoutes from "./module/termoInternacao/termo-internacao.routes";
+import TermoAnestesiaRoutes from "./module/termoAnestesia/termo-anestesia.routes";
+import { termoConsultaRoutes } from "./module/termoConsulta/termoConsulta.routes";
 
 declare module "fastify" {
   export interface FastifyInstance {
@@ -70,6 +72,9 @@ app.register(vaccinationRoutes);
 app.register(attachmentRoutes);
 app.register(ExameRoutes);
 app.register(TermoRoutes);
+app.register(TermoInternacaoRoutes);
+app.register(TermoAnestesiaRoutes);
+app.register(termoConsultaRoutes);
 
 app.setErrorHandler((error, _, reply) => {
   //função que lida com erros

@@ -3,6 +3,11 @@ import { createTeacher } from "./teacher/createTeachers";
 import { createSecretary } from "./secretary/createSecretary";
 import { authenticate } from "@/http/controllers/users/authenticate";
 import { refresh } from "@/http/controllers/users/refresh";
+import { 
+  validateStudentUniqueFields, 
+  validateTeacherUniqueFields, 
+  validateSecretaryUniqueFields 
+} from "@/http/middlewares/validate-unique-fields";
 
 import { studentSchema } from "@/docs/swagger/studentSchema";
 import { teacherSchema } from "@/docs/swagger/teacherSchema";
@@ -40,9 +45,10 @@ import { validateToken } from "../validateToken";
 export async function usersRoutes(app: FastifyInstance) {
   app.get("/validate-token", validateToken); // validação de token
 
-  app.post("/users/student", createStudent);
-  app.post("/users/teacher", createTeacher);
-  app.post("/users/secretary", createSecretary);
+  // Adicionando validação de campos únicos antes da criação
+  app.post("/users/student", { preHandler: [validateStudentUniqueFields] }, createStudent);
+  app.post("/users/teacher", { preHandler: [validateTeacherUniqueFields] }, createTeacher);
+  app.post("/users/secretary", { preHandler: [validateSecretaryUniqueFields] }, createSecretary);
 
   app.post("/sessions", { schema: sessionsSchema }, authenticate); //seção de authenticate
   app.patch("/token/refresh", refresh);
@@ -56,10 +62,9 @@ export async function usersRoutes(app: FastifyInstance) {
   app.get("/get/teacher/id/:id", getTeacherById);
   app.get("/get/teacher/registration", getTeachersByRegistration);
   app.get("/get/teacher/name", getTeacherByName);
-
-  app.put("/put/secretary", updateSecretary);
-  app.put("/put/student", updateStudent);
-  app.put("/put/teacher", updateTeacher);
+  app.put("/put/secretary", { preHandler: [validateSecretaryUniqueFields] }, updateSecretary);
+  app.put("/put/student", { preHandler: [validateStudentUniqueFields] }, updateStudent);
+  app.put("/put/teacher", { preHandler: [validateTeacherUniqueFields] }, updateTeacher);
 
   app.patch("/delete/teacher", deleteTeacher);
   app.patch("/delete/secretary", deleteSecretary);

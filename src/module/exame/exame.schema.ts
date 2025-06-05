@@ -1,13 +1,22 @@
 export const createExameSchema = {
   type: "object",
   properties: {
+    // Request form fields
+    animalId: { type: ["string", "null"] },
+    solicitanteId: { type: ["string", "null"] },
+    dataSolicitacao: { type: ["string", "null"] },
+    situacao: { type: ["string", "null"], default: "pendente" },
+    reason: { type: ["string", "null"] },
+    observations: { type: ["string", "null"] },
+
     // Hematologia
     hemograma: { type: "boolean", default: false },
     pesquisaHemoparasitas: { type: "boolean", default: false },
     metodoHemoparasita: { type: ["string", "null"] },
     outroHemotologia: { type: ["string", "null"] },
-
+    amostraCitologiaGeral: { type: ["string", "null"] },
     // Bioquímicos
+    metodoDeColeta: { type: ["string", "null"] },
     altTGP: { type: "boolean", default: false },
     astTGO: { type: "boolean", default: false },
     fosfataseAlcalina: { type: "boolean", default: false },
@@ -57,6 +66,14 @@ export const createExameSchema = {
 
 // TypeScript interface for the input
 export interface CreateExameInput {
+  // Request form fields
+  animalId?: string | null;
+  solicitanteId?: string | null;
+  dataSolicitacao?: string | null;
+  situacao?: string | null;
+  reason?: string | null;
+  observations?: string | null;
+  
   hemograma?: boolean;
   pesquisaHemoparasitas?: boolean;
   metodoHemoparasita?: string | null;
@@ -66,11 +83,13 @@ export interface CreateExameInput {
   fosfataseAlcalina?: boolean;
   ureia?: boolean;
   creatinina?: boolean;
+  amostraCitologiaGeral?: string | null;
   outrosExamesBioquimicos?: string | null;
   citologiaMicroscopiaDireta?: boolean;
   citologiaMicroscopiaCorada?: boolean;
   pesquisaEctoparasitas?: boolean;
   outroCitologiaGeral?: string | null;
+  metodoDeColeta?: string | null;
   urinaliseEAS?: boolean;
   urinaliseSedimento?: boolean;
   urinaliseOutroMetodo?: string | null;

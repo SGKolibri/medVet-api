@@ -32,6 +32,8 @@ export class GetAllAnimalsUseCase {
 
         return {
           sequence: animal.sequence,
+          race:animal.race,
+          species: animal.species,
           animal_id: animal.id,
           animal_name: animal.name,
           tutor_name: tutor?.name,
@@ -186,6 +188,8 @@ export class searchAnimalByNameOrSequnce {
           sequence: animal.sequence,
           animal_id: animal.id,
           animal_name: animal.name,
+          species: animal.species,
+          race: animal.race,
           tutor_name: tutor?.name,
         };
       });

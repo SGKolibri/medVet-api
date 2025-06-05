@@ -2,6 +2,7 @@
 import { createAnimals } from '@/http/controllers/animals/createAnimals'
 import { FastifyInstance } from 'fastify'
 import { deleteAnimal } from './deleteAnimal'
+import { validateAnimalUniqueFields } from '@/http/middlewares/validate-unique-fields'
 import { 
   getAllAnimals, 
   getAnimalById, 
@@ -14,7 +15,7 @@ import {
 
 
 export async function animalsRoutes(app: FastifyInstance) {
-    app.post('/create/animals/:tutor_id', createAnimals)
+    app.post('/create/animals/:tutor_id', { preHandler: [validateAnimalUniqueFields] }, createAnimals)
 
     app.get('/get/animals', getAllAnimals)
     app.get('/get/animal/id/:id', getAnimalById)

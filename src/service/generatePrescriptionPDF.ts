@@ -1,5 +1,6 @@
 import PDFDocument from "pdfkit";
 import { Prescription, Medication } from "@prisma/client";
+import path from "path";
 
 interface PrescriptionWithMedications extends Prescription {
   medications: Medication[];
@@ -38,6 +39,15 @@ export async function generatePrescriptionPDF(prescription: PrescriptionWithMedi
         const pdfBuffer = Buffer.concat(chunks);
         resolve(pdfBuffer);
       });
+
+      const patinhasPath = path.join(__dirname, '../../public/patinhas.png');
+      
+      doc.save();
+      doc.fillOpacity(0.08);
+      doc.image(patinhasPath, doc.page.width / 2 - 150, doc.page.height / 2 - 150, {
+        width: 300
+      });
+      doc.restore();
 
       const hasControlledMeds = prescription.medications.some(m => m.type === "2via");
       const hasRegularMeds = prescription.medications.some(m => m.type !== "2via");
@@ -96,15 +106,18 @@ function getMedicationUseType(medications: Medication[]): string {
 
 function generatePrescriptionPage(doc: PDFKit.PDFDocument, prescription: PrescriptionWithMedications, viaType: string | null) {
   const currentDate = new Date().toLocaleDateString('pt-BR');
-  
+  const logoUnievPath = path.join(__dirname, '../../public/logo-uniev.png');
+  const logoVetPath = path.join(__dirname, '../../public/logo-medicina-vet.png');
+  doc.image(logoUnievPath, 50, 25, { width: 70 })
+     .image(logoVetPath, doc.page.width - 120, 25, { width: 60 });
+
   doc.fontSize(14)
      .font('Helvetica-Bold')
      .text(viaType?.includes('Via') ? 'RECEITA DE CONTROLE ESPECIAL' : 'RECEITA SIMPLES', 
-           { align: 'center' });
-  doc.moveDown(0.5);
+           40, 60, { align: 'center' });
 
   doc.fontSize(11).text('Clínica Veterinária UniEVANGÉLICA', { align: 'center' });
-  doc.fontSize(9).text('CRMV: 50190 GO', { align: 'center' });
+
   doc.moveDown(0.5);
 
   doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke();

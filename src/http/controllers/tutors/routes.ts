@@ -5,6 +5,7 @@ import {
   getTutorByName,
   searchPhoneTutors,
 } from "@/http/controllers/tutors/getTutors";
+import { validateTutorUniqueFields } from "@/http/middlewares/validate-unique-fields";
 
 import { FastifyInstance } from "fastify";
 
@@ -15,17 +16,16 @@ import { updateTutor } from "./updateTutor";
 import { deleteTutor } from "./deleteTutor";
 
 export async function tutorRoutes(app: FastifyInstance) {
-  app.post("/tutor", createTutor);
+  app.post("/tutor", { preHandler: [validateTutorUniqueFields] }, createTutor);
 
   app.get("/get/tutor", getAllTutors);
 
   app.get("/get/tutor/name", getTutorByName);
 
   app.get("/get/tutor/searchphone", searchPhoneTutors);
-
   app.get("/get/tutor/id/:id", getIdTutor);
 
-  app.put("/put/tutor", updateTutor);
+  app.put("/put/tutor", { preHandler: [validateTutorUniqueFields] }, updateTutor);
 
   app.patch("/delete/tutor", deleteTutor);
 }

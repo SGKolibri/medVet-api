@@ -92,12 +92,15 @@ model Animal {
   age          String
   coat         String?
   status_delete Boolean @default(false)
-  tutor        Tutor    @relation(fields: [tutor_id], references: [id], onDelete: Cascade) // onDelete: Cascade -> deleta os animais do tutor
   tutor_id     String   @db.ObjectId
+  tutor        Tutor    @relation(fields: [tutor_id], references: [id], onDelete: Cascade) // onDelete: Cascade -> deleta os animais do tutor
   enchiridion  Enchiridion[]
-  prescription Prescription[]
-  weight Weight[]
+  prescription Prescription[]  
+  weight       Weight[]
   attachements Attachment[]
+  exames       Exame[]
+  termosInternacao TermoResponsabilidadeInternacao[]
+  termosConsulta TermoResponsabilidade[]
   @@map("animals")
 }
 
@@ -221,6 +224,15 @@ model Attachment {
 
 model Exame {
   id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  
+  // New fields to connect to animal and store request PDF
+  animalId        String? @db.ObjectId
+  animal          Animal? @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  solicitanteId   String? @db.ObjectId
+  dataSolicitacao DateTime?
+  situacao        String? @default("pendente") // pendente, aprovado, concluido, cancelado
+  pdfRequest      Bytes?
+  pdfRequestName  String?
 
   hemograma               Boolean @default(false)
   pesquisaHemoparasitas   Boolean @default(false)
@@ -238,7 +250,9 @@ model Exame {
   citologiaMicroscopiaCorada  Boolean @default(false)
   pesquisaEctoparasitas       Boolean @default(false)
   outroCitologiaGeral         String?
-
+  amostraCitologiaGeral       String?
+  
+  metodoDeColeta          String?
   urinaliseEAS            Boolean @default(false)
   urinaliseSedimento      Boolean @default(false)
   urinaliseOutroMetodo    String?
@@ -266,6 +280,8 @@ model Exame {
   testeAntimicrobianos    Boolean @default(false)
   outrosExames            String?
 
+  reason String?
+  observations String?
   createdAt DateTime @default(now())
 }
 
@@ -284,9 +300,47 @@ model TermoResponsabilidade {
   nomeResponsavel String
   cpf             String
   endereco        String
+  telefone        String
+  cep             String
   animalId        String @db.ObjectId
+  animal          Animal  @relation(fields: [animalId], references: [id], onDelete: Cascade)
   pdfContent      Bytes?
   pdfName         String?
-
   createdAt       DateTime @default(now())
+}
+
+model TermoResponsabilidadeInternacao {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  nomeResponsavel String
+  cpf             String
+  animalId        String @db.ObjectId
+  dataEntrada     DateTime @default(now())
+  dataPrevistaSaida DateTime?
+  motivoInternacao String
+  observacoes     String?
+  permissaoMedica Boolean @default(false)   
+  animal          Animal  @relation(fields: [animalId], references: [id], onDelete: Cascade)
+  pdfContent      Bytes?
+  pdfName         String?
+  createdAt       DateTime @default(now())
+
+  @@map("termo_responsabilidade_internacao")
+}
+
+model TermoAutorizacaoAnestesia {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  nomeResponsavel String
+  cpf             String
+  endereco        String
+  animalId        String @db.ObjectId
+  procedimento    String
+  riscos          String?
+  autorizaTransfusao Boolean @default(false)
+  autorizaReanimacao Boolean @default(true)
+  pdfContent      Bytes?
+  pdfName         String?
+  
+  createdAt       DateTime @default(now())
+
+  @@map("termo_autorizacao_anestesia")
 }

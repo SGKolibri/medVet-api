@@ -5,6 +5,7 @@ import {
   getTermoByIdController,
   deleteTermoController,
   getTermoPdfController,
+  generateTermoInternacaoPdfController,
 } from "./termo.controller";
 import { FastifyInstance } from "fastify";
 import { createTermoSchema, CreateTermoInput } from "./termo.schema";
@@ -12,16 +13,12 @@ import { createTermoSchema, CreateTermoInput } from "./termo.schema";
 export default async function TermoRoutes(app: FastifyInstance) {
   app.get(
     "/get/termos",
-    {
-      preHandler: [app.authenticate],
-    },
     getTermosController
   );
 
   app.post<{ Body: CreateTermoInput }>(
     "/create/termo",
     {
-      preHandler: [app.authenticate],
       schema: {
         body: createTermoSchema,
       },
@@ -32,7 +29,6 @@ export default async function TermoRoutes(app: FastifyInstance) {
   app.get<{ Params: { id: string } }>(
     "/get/termo/:id",
     {
-      preHandler: [app.authenticate],
       schema: {
         params: {
           type: "object",
@@ -45,11 +41,9 @@ export default async function TermoRoutes(app: FastifyInstance) {
     },
     getTermoByIdController
   );
-
   app.put<{ Params: { id: string }; Body: CreateTermoInput }>(
     "/update/termo/:id",
     {
-      preHandler: [app.authenticate],
       schema: {
         params: {
           type: "object",
@@ -67,7 +61,6 @@ export default async function TermoRoutes(app: FastifyInstance) {
   app.delete<{ Params: { id: string } }>(
     "/delete/termo/:id",
     {
-      preHandler: [app.authenticate],
       schema: {
         params: {
           type: "object",
@@ -84,7 +77,6 @@ export default async function TermoRoutes(app: FastifyInstance) {
   app.get<{ Params: { id: string } }>(
     "/get/termo/:id/pdf",
     {
-      preHandler: [app.authenticate],
       schema: {
         params: {
           type: "object",
@@ -96,5 +88,9 @@ export default async function TermoRoutes(app: FastifyInstance) {
       },
     },
     getTermoPdfController
+  );
+  app.post(
+    "/generate/termo-internacao-pdf",
+    generateTermoInternacaoPdfController
   );
 }

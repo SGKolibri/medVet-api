@@ -3,16 +3,29 @@ export const createTermoSchema = {
   properties: {
     nomeResponsavel: { type: "string" },
     cpf: { type: "string" },
-    endereco: { type: "string" },
     animalId: { type: "string" },
+    dataEntrada: { type: "string" },
+    permissaoMedica: { type: "boolean" },
+    dataPrevistaSaida: { type: "string" },
+    motivoInternacao: { type: "string" },
+    observacoes: { type: "string" },
   },
-  required: ["nomeResponsavel", "cpf", "endereco", "animalId"],
+  required: [
+    "nomeResponsavel",
+    "cpf",
+    "animalId",
+    "motivoInternacao",
+  ],
   additionalProperties: true, // PDF, requisição multipart
 };
 
 export interface CreateTermoInput {
   nomeResponsavel: string;
   cpf: string;
-  endereco: string;
   animalId: string;
+  dataEntrada?: string;
+  dataPrevistaSaida?: string;
+  motivoInternacao: string;
+  observacoes?: string;
+  permissaoMedica?: boolean;
 }

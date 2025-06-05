@@ -2,6 +2,8 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@/lib/prisma";
 import { CreateTermoInput } from "./termo.schema";
 import fs from "fs";
+import { generateHospitalAdmissionPDF } from "@/service/generateHospitalAdmissionPDF";
+import { BadRequestError } from "../../utils/api-errors";
 
 // Interface para o arquivo PDF enviado pelo cliente
 interface MultipartFile {
@@ -15,57 +17,63 @@ export async function createTermoController(
   request: FastifyRequest<{
     Body: CreateTermoInput & {
       pdf?: MultipartFile;
+      dataEntrada?: string;
+      dataPrevistaSaida?: string;
+      motivoInternacao: string;
+      observacoes?: string;
+      permissaoMedica?: boolean;
     };
   }>,
   reply: FastifyReply
 ) {
   try {
-    const { nomeResponsavel, cpf, endereco, animalId } = request.body;
+    const {
+      nomeResponsavel,
+      cpf,
+      animalId,
+      dataEntrada,
+      dataPrevistaSaida,
+      motivoInternacao,
+      observacoes,
+    } = request.body;
 
     // Verificar se o animal existe
     const animal = await prisma.animal.findUnique({
       where: { id: animalId },
+      select: {
+        id: true,
+        name: true,
+        species: true,
+        race: true,
+      },
     });
 
     if (!animal) {
       return reply.status(404).send({ error: "Animal não encontrado" });
-    }
-
-    let pdfContent: Buffer | undefined;
-    let pdfName: string | undefined;
-
-    // Se um arquivo PDF foi enviado, processar e armazenar
-    if (request.body.pdf) {
-      // Ler o conteúdo do arquivo
-      const chunks: Buffer[] = [];
-      for await (const chunk of request.body.pdf.file) {
-        chunks.push(chunk as Buffer);
-      }
-      pdfContent = Buffer.concat(chunks);
-      pdfName = request.body.pdf.filename;
-    }
-
-    // Criar o termo com os dados básicos e, opcionalmente, o PDF
-    const termo = await prisma.termoResponsabilidade.create({
-      data: {
-        nomeResponsavel,
-        cpf,
-        endereco,
-        animalId,
-        ...(pdfContent && { pdfContent, pdfName }),
+    }    // Create the termo without PDF
+    const termo = await prisma.termoResponsabilidadeInternacao.create({
+      data: {      nomeResponsavel,
+      cpf,
+      animalId,
+      dataEntrada: dataEntrada ? new Date(dataEntrada) : new Date(),
+      dataPrevistaSaida: dataPrevistaSaida ? new Date(dataPrevistaSaida) : null,
+      motivoInternacao,
+      observacoes,
+      permissaoMedica: request.body.permissaoMedica !== undefined ? request.body.permissaoMedica : false,
       },
     });
 
-    // Retornar o termo criado, omitindo o conteúdo do PDF na resposta
+    // Return the termo created
     return reply.status(201).send({
       id: termo.id,
       nomeResponsavel: termo.nomeResponsavel,
       cpf: termo.cpf,
-      endereco: termo.endereco,
       animalId: termo.animalId,
-      pdfName: termo.pdfName,
+      dataEntrada: termo.dataEntrada,
+      dataPrevistaSaida: termo.dataPrevistaSaida,
+      motivoInternacao: termo.motivoInternacao,
+      observacoes: termo.observacoes,
       createdAt: termo.createdAt,
-      // Não incluir pdfContent na resposta para evitar payload grande
     });
   } catch (error) {
     console.error("Erro ao criar Termo de Responsabilidade:", error);
@@ -78,7 +86,7 @@ export async function getTermosController(
   reply: FastifyReply
 ) {
   try {
-    const termos = await prisma.termoResponsabilidade.findMany();
+    const termos = await prisma.termoResponsabilidadeInternacao.findMany();
     return reply.status(200).send(termos);
   } catch (error) {
     console.error("Error fetching Termos de Responsabilidade:", error);
@@ -92,8 +100,7 @@ export async function getTermoByIdController(
 ) {
   const { id } = request.params;
 
-  try {
-    const termo = await prisma.termoResponsabilidade.findUnique({
+  try {    const termo = await prisma.termoResponsabilidadeInternacao.findUnique({
       where: { id },
     });
 
@@ -116,7 +123,13 @@ export async function getTermoByIdController(
 export async function updateTermoController(
   request: FastifyRequest<{
     Params: { id: string };
-    Body: CreateTermoInput;
+    Body: CreateTermoInput & {
+      dataEntrada?: string;
+      dataPrevistaSaida?: string;
+      motivoInternacao: string;
+      observacoes?: string;
+      permissaoMedica?: boolean;
+    };
   }>,
   reply: FastifyReply
 ) {
@@ -125,7 +138,7 @@ export async function updateTermoController(
 
   try {
     // Verificar se o termo existe
-    const existingTermo = await prisma.termoResponsabilidade.findUnique({
+    const existingTermo = await prisma.termoResponsabilidadeInternacao.findUnique({
       where: { id },
     });
 
@@ -138,15 +151,38 @@ export async function updateTermoController(
     // Verificar se o animal existe
     const animal = await prisma.animal.findUnique({
       where: { id: body.animalId },
-    });
-
-    if (!animal) {
+    });    if (!animal) {
       return reply.status(404).send({ error: "Animal not found" });
     }
-
-    const updatedTermo = await prisma.termoResponsabilidade.update({
+      // Generate new PDF with updated data
+    const pdfData = {
+      id,
+      nomeResponsavel: body.nomeResponsavel,
+      cpf: body.cpf,      animalId: body.animalId,
+      dataEntrada: body.dataEntrada ? new Date(body.dataEntrada) : existingTermo.dataEntrada,
+      dataPrevistaSaida: body.dataPrevistaSaida ? new Date(body.dataPrevistaSaida) : existingTermo.dataPrevistaSaida,
+      motivoInternacao: body.motivoInternacao,
+      observacoes: body.observacoes || null,
+      permissaoMedica: body.permissaoMedica !== undefined ? body.permissaoMedica : false,
+      createdAt: existingTermo.createdAt,
+      animalName: animal.name,
+      species: animal.species || '',
+      race: animal.race || '',
+    };
+    
+    const pdfContent = await generateHospitalAdmissionPDF(pdfData);
+    const pdfName = `termo-internacao-${new Date().toISOString()}.pdf`;    const updatedTermo = await prisma.termoResponsabilidadeInternacao.update({
       where: { id },
-      data: body,
+      data: {
+        nomeResponsavel: body.nomeResponsavel,
+        cpf: body.cpf,
+        animalId: body.animalId,
+        dataEntrada: body.dataEntrada ? new Date(body.dataEntrada) : existingTermo.dataEntrada,
+        dataPrevistaSaida: body.dataPrevistaSaida ? new Date(body.dataPrevistaSaida) : existingTermo.dataPrevistaSaida,
+        motivoInternacao: body.motivoInternacao,
+        observacoes: body.observacoes || null,
+        permissaoMedica: body.permissaoMedica !== undefined ? body.permissaoMedica : existingTermo.permissaoMedica,
+      },
     });
 
     return reply.status(200).send(updatedTermo);
@@ -167,7 +203,7 @@ export async function deleteTermoController(
 
   try {
     // Verificar se o termo existe
-    const existingTermo = await prisma.termoResponsabilidade.findUnique({
+    const existingTermo = await prisma.termoResponsabilidadeInternacao.findUnique({
       where: { id },
     });
 
@@ -175,9 +211,7 @@ export async function deleteTermoController(
       return reply
         .status(404)
         .send({ error: "Termo de Responsabilidade not found" });
-    }
-
-    await prisma.termoResponsabilidade.delete({
+    }    await prisma.termoResponsabilidadeInternacao.delete({
       where: { id },
     });
 
@@ -198,26 +232,102 @@ export async function getTermoPdfController(
   const { id } = request.params;
 
   try {
-    const termo = await prisma.termoResponsabilidade.findUnique({
+    const termo = await prisma.termoResponsabilidadeInternacao.findFirst({
       where: { id },
-      select: {
-        pdfContent: true,
-        pdfName: true,
+      include: {
+        animal: {
+          select: {
+            name: true,
+            species: true,
+            race: true,
+          },
+        },
       },
-    });
+    });    if (!termo) {
+      return reply.status(404).send({ error: "Termo not found" });
+    }    // Generate PDF on demand
+    const pdfData = {
+      id: termo.id,
+      nomeResponsavel: termo.nomeResponsavel,
+      cpf: termo.cpf,      animalId: termo.animalId,
+      dataEntrada: termo.dataEntrada,
+      dataPrevistaSaida: termo.dataPrevistaSaida,
+      motivoInternacao: termo.motivoInternacao,
+      observacoes: termo.observacoes || null,
+      permissaoMedica: termo.permissaoMedica !== undefined ? termo.permissaoMedica : false,
+      createdAt: termo.createdAt,
+      animalName: termo.animal?.name || '',
+      species: termo.animal?.species || '',
+      race: termo.animal?.race || '',
+    };
 
-    if (!termo || !termo.pdfContent) {
-      return reply.status(404).send({ error: "PDF not found" });
-    }
+    const pdfContent = await generateHospitalAdmissionPDF(pdfData);
+    const pdfName = `termo-internacao-${termo.id}.pdf`;
 
     reply.header("Content-Type", "application/pdf");
     reply.header(
       "Content-Disposition",
-      `attachment; filename=${termo.pdfName || "termo.pdf"}`
+      `attachment; filename=${pdfName}`
     );
-    return reply.send(termo.pdfContent);
+    return reply.send(pdfContent);
   } catch (error) {
-    console.error(`Error fetching PDF for Termo with ID ${id}:`, error);
-    return reply.status(500).send({ error: "Internal Server Error" });
+    console.error(`Error generating PDF for Termo with ID ${id}:`, error);
+    return reply.status(500).send({ error: "Error generating PDF" });
+  }
+}
+
+export async function generateTermoInternacaoPdfController(
+  request: FastifyRequest<{
+    Body: {
+      animalId: string;
+      animalName?: string;
+      nomeResponsavel: string;
+      cpf: string;
+      dataEntrada: string;
+      dataPrevistaSaida?: string;
+      motivoInternacao: string;
+      observacoes?: string;
+      permissaoMedica?: boolean;
+    };
+  }>,
+  reply: FastifyReply
+){
+  try {
+    const data = request.body;
+    
+    const animal = await prisma.animal.findUnique({
+      where: { id: data.animalId },
+      select: {
+        name: true,
+        species: true,
+        race: true
+      }
+    });
+
+    if (!animal) {
+      throw new BadRequestError('Animal not found');
+    }    const pdfBuffer = await generateHospitalAdmissionPDF({
+      id: '',
+      animalId: data.animalId,
+      animalName: animal.name,
+      species: animal.species || '',
+      race: animal.race || '',
+      nomeResponsavel: data.nomeResponsavel,
+      cpf: data.cpf,
+      dataEntrada: new Date(data.dataEntrada),
+      dataPrevistaSaida: data.dataPrevistaSaida ? new Date(data.dataPrevistaSaida) : undefined,
+      motivoInternacao: data.motivoInternacao,
+      observacoes: data.observacoes,
+      permissaoMedica: data.permissaoMedica !== undefined ? data.permissaoMedica : false
+    });
+
+    // Set response headers for PDF
+    reply.header('Content-Type', 'application/pdf');
+    reply.header('Content-Disposition', `attachment; filename="termo-internacao-${animal.name}.pdf"`);
+    
+    return reply.send(pdfBuffer);
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    throw new BadRequestError('Error generating PDF');
   }
 }

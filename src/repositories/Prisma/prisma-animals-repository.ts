@@ -99,8 +99,21 @@ export class PrismaAnimalsRepository implements AnimalRepository {
             },
           },
         ],
+        status_delete: false, // Only return non-deleted animals
       },
-
+      select: {
+        id: true,
+        sequence: true,
+        name: true,
+        created_at: true,
+        species: true,
+        race: true,
+        gender: true,
+        age: true,
+        coat: true,
+        status_delete: true,
+        tutor_id: true,
+      },
       take: 10,
       skip: (page - 1) * 10,
     });
