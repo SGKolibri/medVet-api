@@ -1,6 +1,10 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { prisma } from "@/lib/prisma";
-import { normalizeCpf, normalizeEmail, normalizeSequence } from "@/utils/data-normalization";
+import {
+  normalizeCpf,
+  normalizeEmail,
+  normalizeSequence,
+} from "@/utils/data-normalization";
 
 interface ValidationField {
   field: string;
@@ -12,7 +16,7 @@ interface ValidationField {
 
 /**
  * Middleware genérico para validar campos únicos antes de criar ou atualizar registros
- * 
+ *
  * @param modelName Nome do modelo Prisma a ser validado
  * @param fields Array de objetos contendo campo, valor e campo do modelo a ser validado
  * @param recordId Id do registro atual (para updates, evita conflito com o próprio registro)
@@ -23,28 +27,34 @@ export async function validateUniqueFields(
   recordId?: string
 ) {
   const errors = [];
-  for (const { field, value, modelField, required = false, normalize } of fields) {
+  for (const {
+    field,
+    value,
+    modelField,
+    required = false,
+    normalize,
+  } of fields) {
     // Pula campos vazios que não são obrigatórios
     if (!required && (value === null || value === undefined || value === "")) {
       continue;
     }
-    
+
     // Normaliza o valor se houver uma função de normalização
     const normalizedValue = normalize ? normalize(value) : value;
-    
-    // Se a normalização retornou null (valor inválido) e o campo é obrigatório, 
+
+    // Se a normalização retornou null (valor inválido) e o campo é obrigatório,
     // reporta o erro de validação
     if (normalizedValue === null && required) {
       errors.push({
         field,
-        message: `O valor '${value}' para o campo '${field}' é inválido.`
+        message: `O valor '${value}' para o campo '${field}' é inválido.`,
       });
       continue;
     }
 
     // Condição para verificar se já existe um registro com este valor
     const whereCondition: any = {
-      [modelField]: normalizedValue
+      [modelField]: normalizedValue,
     };
 
     // Se for uma atualização, exclui o próprio registro da validação
@@ -54,13 +64,13 @@ export async function validateUniqueFields(
 
     // Execução da consulta dinamicamente baseada no modelo
     const count = await (prisma as any)[modelName].count({
-      where: whereCondition
+      where: whereCondition,
     });
 
     if (count > 0) {
       errors.push({
         field,
-        message: `O valor '${value}' para o campo '${field}' já está sendo utilizado.`
+        message: `O valor '${value}' para o campo '${field}' já está sendo utilizado.`,
       });
     }
   }
@@ -82,19 +92,35 @@ export async function validateStudentUniqueFields(
   const id = request.params?.id;
 
   const fieldsToValidate = [
-    { field: "cpf", value: cpf, modelField: "cpf", required: true, normalize: normalizeCpf },
-    { field: "email", value: email, modelField: "email", normalize: normalizeEmail },
-    { field: "registration", value: registration, modelField: "registration", required: true }
+    {
+      field: "cpf",
+      value: cpf,
+      modelField: "cpf",
+      required: true,
+      normalize: normalizeCpf,
+    },
+    {
+      field: "email",
+      value: email,
+      modelField: "email",
+      normalize: normalizeEmail,
+    },
+    {
+      field: "registration",
+      value: registration,
+      modelField: "registration",
+      required: true,
+    },
   ];
 
-  const errors = await validateUniqueFields("student", fieldsToValidate, id);
+  // const errors = await validateUniqueFields("student", fieldsToValidate, id);
 
-  if (errors) {
-    return reply.status(400).send({
-      message: "Erro de validação: campos únicos já em uso",
-      errors
-    });
-  }
+  // if (errors) {
+  //   return reply.status(400).send({
+  //     message: "Erro de validação: campos únicos já em uso",
+  //     errors,
+  //   });
+  // }
 }
 
 /**
@@ -111,19 +137,35 @@ export async function validateTeacherUniqueFields(
   const id = request.params?.id;
 
   const fieldsToValidate = [
-    { field: "cpf", value: cpf, modelField: "cpf", required: true, normalize: normalizeCpf },
-    { field: "email", value: email, modelField: "email", normalize: normalizeEmail },
-    { field: "registration", value: registration, modelField: "registration", required: true }
+    {
+      field: "cpf",
+      value: cpf,
+      modelField: "cpf",
+      required: true,
+      normalize: normalizeCpf,
+    },
+    {
+      field: "email",
+      value: email,
+      modelField: "email",
+      normalize: normalizeEmail,
+    },
+    {
+      field: "registration",
+      value: registration,
+      modelField: "registration",
+      required: true,
+    },
   ];
 
-  const errors = await validateUniqueFields("teacher", fieldsToValidate, id);
+  // const errors = await validateUniqueFields("teacher", fieldsToValidate, id);
 
-  if (errors) {
-    return reply.status(400).send({
-      message: "Erro de validação: campos únicos já em uso",
-      errors
-    });
-  }
+  // if (errors) {
+  //   return reply.status(400).send({
+  //     message: "Erro de validação: campos únicos já em uso",
+  //     errors,
+  //   });
+  // }
 }
 
 /**
@@ -140,18 +182,29 @@ export async function validateSecretaryUniqueFields(
   const id = request.params?.id;
 
   const fieldsToValidate = [
-    { field: "cpf", value: cpf, modelField: "cpf", required: true, normalize: normalizeCpf },
-    { field: "email", value: email, modelField: "email", normalize: normalizeEmail }
+    {
+      field: "cpf",
+      value: cpf,
+      modelField: "cpf",
+      required: true,
+      normalize: normalizeCpf,
+    },
+    {
+      field: "email",
+      value: email,
+      modelField: "email",
+      normalize: normalizeEmail,
+    },
   ];
 
-  const errors = await validateUniqueFields("secretary", fieldsToValidate, id);
+  // const errors = await validateUniqueFields("secretary", fieldsToValidate, id);
 
-  if (errors) {
-    return reply.status(400).send({
-      message: "Erro de validação: campos únicos já em uso",
-      errors
-    });
-  }
+  // if (errors) {
+  //   return reply.status(400).send({
+  //     message: "Erro de validação: campos únicos já em uso",
+  //     errors,
+  //   });
+  // }
 }
 
 /**
@@ -168,19 +221,30 @@ export async function validateTutorUniqueFields(
   const id = request.params?.id;
 
   const fieldsToValidate = [
-    { field: "sequence", value: sequence, modelField: "sequence", required: true, normalize: normalizeSequence },
+    {
+      field: "sequence",
+      value: sequence,
+      modelField: "sequence",
+      required: true,
+      normalize: normalizeSequence,
+    },
     { field: "cpf", value: cpf, modelField: "cpf", normalize: normalizeCpf },
-    { field: "email", value: email, modelField: "email", normalize: normalizeEmail }
+    {
+      field: "email",
+      value: email,
+      modelField: "email",
+      normalize: normalizeEmail,
+    },
   ];
 
-  const errors = await validateUniqueFields("tutor", fieldsToValidate, id);
+  // const errors = await validateUniqueFields("tutor", fieldsToValidate, id);
 
-  if (errors) {
-    return reply.status(400).send({
-      message: "Erro de validação: campos únicos já em uso",
-      errors
-    });
-  }
+  // if (errors) {
+  //   return reply.status(400).send({
+  //     message: "Erro de validação: campos únicos já em uso",
+  //     errors
+  //   });
+  // }
 }
 
 /**
@@ -197,15 +261,21 @@ export async function validateAnimalUniqueFields(
   const id = request.params?.id;
 
   const fieldsToValidate = [
-    { field: "sequence", value: sequence, modelField: "sequence", required: true, normalize: normalizeSequence }
+    {
+      field: "sequence",
+      value: sequence,
+      modelField: "sequence",
+      required: true,
+      normalize: normalizeSequence,
+    },
   ];
 
-  const errors = await validateUniqueFields("animal", fieldsToValidate, id);
+  // const errors = await validateUniqueFields("animal", fieldsToValidate, id);
 
-  if (errors) {
-    return reply.status(400).send({
-      message: "Erro de validação: campos únicos já em uso",
-      errors
-    });
-  }
+  // if (errors) {
+  //   return reply.status(400).send({
+  //     message: "Erro de validação: campos únicos já em uso",
+  //     errors,
+  //   });
+  // }
 }

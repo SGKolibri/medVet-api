@@ -9,6 +9,8 @@ export async function createTutor(
   request: FastifyRequest<{ Body: any }>,
   reply: FastifyReply
 ) {
+  console.log("Received request to create tutor:", request.body);
+
   const registerBodySchema = z.object({
     name: z.string(),
     cpf: z.string().optional(),
@@ -21,6 +23,8 @@ export async function createTutor(
       .nullable()
       .optional(),
   });
+
+  console.log("Registering tutor...");
 
   const { name, cpf, phone, email, adress } = registerBodySchema.parse(
     request.body
@@ -39,11 +43,13 @@ export async function createTutor(
       email: normalizedEmail,
       adress,
     });
+    console.log("Tutor registered successfully");
   } catch (err) {
     if (err instanceof TutorAlreadyExistsError) {
+      console.error("Tutor already exists:", err.message);
       return reply.status(409).send({ message: err.message });
     }
-
+    console.error("Error registering tutor:", err);
     throw err;
   }
 
