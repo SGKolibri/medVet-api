@@ -145,7 +145,10 @@ function generatePrescriptionPage(doc: PDFKit.PDFDocument, prescription: Prescri
   doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke();
   doc.moveDown(0.5);
 
-  doc.fontSize(12).font('Helvetica-Bold').text('PRESCRIÇÃO MÉDICA', { align: 'center' });
+  doc.fontSize(12).font('Helvetica-Bold').text('PRESCRIÇÃO MÉDICA', 40, doc.y, { 
+    align: 'center',
+    width: doc.page.width - 80
+  });
   doc.font('Helvetica');
   doc.moveDown(1);
 
@@ -153,13 +156,22 @@ function generatePrescriptionPage(doc: PDFKit.PDFDocument, prescription: Prescri
     if (viaType === "Medicamentos Comuns") {
       doc.fontSize(9)
          .font('Helvetica-Bold')
-         .text('RECEITA DE MEDICAMENTOS DE USO COMUM', { align: 'center' });
+         .text('RECEITA DE MEDICAMENTOS DE USO COMUM', 40, doc.y, { 
+           align: 'center',
+           width: doc.page.width - 80
+         });
     } else if (viaType) {
       doc.fontSize(9)
          .font('Helvetica-Bold')
          .fillColor('red')
-         .text('RECEITA DE MEDICAMENTOS CONTROLADOS', { align: 'center' })
-         .text(viaType, { align: 'center' });
+         .text('RECEITA DE MEDICAMENTOS CONTROLADOS', 40, doc.y, { 
+           align: 'center',
+           width: doc.page.width - 80
+         })
+         .text(viaType, 40, doc.y + 12, { 
+           align: 'center',
+           width: doc.page.width - 80
+         });
       doc.fillColor('black');
     }
     doc.moveDown(0.5);
@@ -223,8 +235,16 @@ function generatePrescriptionPage(doc: PDFKit.PDFDocument, prescription: Prescri
     doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke();
     doc.moveDown(0.5);
 
-    doc.fontSize(9).text('Receita de Controle Especial', { align: 'center' });
-    doc.text(`${viaType}`, { align: 'center' });
+    // Texto diferente dependendo do tipo de medicamento
+    const receiptText = viaType?.includes('Via') ? 'Receita de Controle Especial' : 'Receita Comum';
+    doc.fontSize(9).text(receiptText, 40, doc.y, { 
+      align: 'center',
+      width: doc.page.width - 80
+    });
+    doc.text(`${viaType}`, 40, doc.y + 12, { 
+      align: 'center',
+      width: doc.page.width - 80
+    });
     doc.moveDown(0.5);
   }
 
@@ -245,38 +265,41 @@ function generatePrescriptionPage(doc: PDFKit.PDFDocument, prescription: Prescri
   doc.text('CRMV 50190/GO', signatureX);
   doc.moveDown(1);
 
-  doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke();
-  doc.moveDown(0.5);
+  const hasControlledMeds = prescription.medications.some(m => m.type === "2via");
+  if (hasControlledMeds && viaType?.includes('Via')) {
+    doc.moveTo(40, doc.y).lineTo(doc.page.width - 40, doc.y).stroke();
+    doc.moveDown(0.5);
 
-  doc.fontSize(9).font('Helvetica-Bold').text('IDENTIFICAÇÃO DO COMPRADOR');
-  doc.font('Helvetica');
-  doc.moveDown(0.3);
+    doc.fontSize(9).font('Helvetica-Bold').text('IDENTIFICAÇÃO DO COMPRADOR');
+    doc.font('Helvetica');
+    doc.moveDown(0.3);
 
-  const leftMargin = 40;
-  const columnWidth = (doc.page.width - 80) / 2;
-  doc.text('Nome:____________________________', leftMargin, doc.y);
-  doc.text('RG:______________________________', leftMargin + columnWidth, doc.y);
-  doc.moveDown(0.8);
+    const leftMargin = 40;
+    const columnWidth = (doc.page.width - 80) / 2;
+    doc.text('Nome:____________________________', leftMargin, doc.y);
+    doc.text('RG:______________________________', leftMargin + columnWidth, doc.y);
+    doc.moveDown(0.8);
 
-  doc.text('Endereço:_____________________________________________________________', leftMargin);
-  doc.moveDown(0.8);
+    doc.text('Endereço:_____________________________________________________________', leftMargin);
+    doc.moveDown(0.8);
 
-  doc.text('Cidade:___________________________', leftMargin);
-  doc.text('UF:_________', leftMargin + columnWidth);
-  doc.moveDown(0.8);
-  
-  doc.text('Telefone:_________________________', leftMargin);
-  doc.text('CEP:_____-____', leftMargin + columnWidth);
-  doc.moveDown(0.8);
+    doc.text('Cidade:___________________________', leftMargin);
+    doc.text('UF:_________', leftMargin + columnWidth);
+    doc.moveDown(0.8);
+    
+    doc.text('Telefone:_________________________', leftMargin);
+    doc.text('CEP:_____-____', leftMargin + columnWidth);
+    doc.moveDown(0.8);
 
-  doc.fontSize(9).font('Helvetica-Bold').text('IDENTIFICAÇÃO DO FORNECEDOR');
-  doc.font('Helvetica');
-  doc.moveDown(0.3);
+    doc.fontSize(9).font('Helvetica-Bold').text('IDENTIFICAÇÃO DO FORNECEDOR');
+    doc.font('Helvetica');
+    doc.moveDown(0.3);
 
-  doc.text('Data:____/____/________', leftMargin);
-  doc.text('Número do Lote:________________', leftMargin + columnWidth);
-  doc.moveDown(0.8);
-  doc.text('Nome do Estabelecimento:_______________________________________________', leftMargin);
-  doc.moveDown(0.8);
-  doc.text('Assinatura do Farmacêutico:__________________________________________', leftMargin);
+    doc.text('Data:____/____/________', leftMargin);
+    doc.text('Número do Lote:________________', leftMargin + columnWidth);
+    doc.moveDown(0.8);
+    doc.text('Nome do Estabelecimento:_______________________________________________', leftMargin);
+    doc.moveDown(0.8);
+    doc.text('Assinatura do Farmacêutico:__________________________________________', leftMargin);
+  }
 }

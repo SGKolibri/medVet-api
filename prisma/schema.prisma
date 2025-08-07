@@ -194,6 +194,7 @@ model Medication{
   unit String
   measurement String
   description String
+  observations String? 
   prescription_id String @db.ObjectId
   prescription Prescription @relation(fields: [prescription_id], references: [id], onDelete: Cascade)
 

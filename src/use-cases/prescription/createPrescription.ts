@@ -41,7 +41,8 @@ export class CreatePrescriptionUseCase {
         }
 
         const prescription = await this.prescriptionRepository.createPrescription({
-            teacher_id, animal_id
+            teacher_id, 
+            animal_id
         })
 
         const prescription_id = prescription.id
@@ -53,6 +54,7 @@ export class CreatePrescriptionUseCase {
                 const measurement = medicate.measurement
                 const description = medicate.description
                 const type = medicate.type
+                const observations = medicate.observations // Observações específicas do medicamento
                 await this.medicationRepository.createMedication({
                     prescription_id,
                     use_type,
@@ -60,7 +62,8 @@ export class CreatePrescriptionUseCase {
                     unit,
                     measurement,
                     description,
-                    type
+                    type,
+                    observations
                 })
             })
         }

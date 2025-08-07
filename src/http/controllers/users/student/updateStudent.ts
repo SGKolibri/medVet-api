@@ -13,7 +13,7 @@ export async function updateStudent(
     name: z.string(),
     email: z.string().email(),
     cpf: z.string(),
-    password: z.string(),
+    password: z.string().optional(), 
     registration: z.string(),
     course: z.string().nullable(),
     shift: z.string().nullable(),

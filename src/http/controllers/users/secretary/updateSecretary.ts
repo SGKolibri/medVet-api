@@ -13,7 +13,7 @@ export async function updateSecretary(
     name: z.string(),
     email: z.string().email(),
     cpf: z.string(),
-    password: z.string(),
+    password: z.string().optional(),
     phone: z.string().nullable(),
   });
 

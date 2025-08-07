@@ -96,7 +96,8 @@ export class GetPrescriptionByAnimalIdUseCase {
                         pharmacy: medication.pharmacy,
                         unit: medication.unit,
                         measurement: medication.measurement,
-                        description: medication.description
+                        description: medication.description,
+                        observations: medication.observations
                     }))
                 };
             })

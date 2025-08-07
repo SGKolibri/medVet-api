@@ -9,7 +9,7 @@ interface UpdateUseCaseRequest {
   cpf: string
   email: string | null
   phone: string | null
-  password: string
+  password?: string
   registration: string
   course: string | null
   shift: string | null
@@ -26,29 +26,39 @@ export class UpdateStudentUseCase {
 
   async execute({ id, name, email, cpf, password, registration, course, shift, period, phone }: UpdateUseCaseRequest): Promise<UpdateUseCaseResponse>{
 
-
     const userExists = await this.userRepository.findStudentById(id)
 
-    const password_hash = await hash(password, 6)
-
-    if (userExists) {
-      const user = await this.userRepository.updateStudent(id, {
-        name,
-        email,
-        cpf,
-        phone,
-        password_hash,
-        registration,
-        course,
-        shift, 
-        period
-      })
-
-      return {
-        user
-      }
-    } else {
+    if (!userExists) {
       throw new NoExistsUsersError()
+    }
+
+    // Só criptografa a senha se ela foi fornecida
+    let password_hash: string | undefined;
+    if (password) {
+      password_hash = await hash(password, 6);
+    }
+
+    // Monta os dados para atualização, incluindo senha apenas se fornecida
+    const updateData: any = {
+      name,
+      email,
+      cpf,
+      phone,
+      registration,
+      course,
+      shift, 
+      period
+    };
+
+    // Só inclui a senha se ela foi fornecida
+    if (password_hash) {
+      updateData.password_hash = password_hash;
+    }
+
+    const user = await this.userRepository.updateStudent(id, updateData);
+
+    return {
+      user
     }
   }
 }

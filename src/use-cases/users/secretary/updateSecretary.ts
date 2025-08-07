@@ -9,7 +9,7 @@ interface UpdateUseCaseRequest {
   cpf: string
   email: string | null
   phone: string | null
-  password: string
+  password?: string // Senha agora é opcional
 }
 
 interface UpdateUseCaseResponse {
@@ -22,25 +22,35 @@ export class UpdateSecretaryUseCase {
 
   async execute({ id, name, email, cpf, phone, password }: UpdateUseCaseRequest): Promise<UpdateUseCaseResponse> {
 
-    const password_hash = await hash(password, 6)
-
     const userExists = await this.userRepository.findSecretaryById(id)
 
-
-    if (userExists) {
-      const user = await this.userRepository.updateSecretary(id, {
-        name,
-        email,
-        cpf,
-        phone,
-        password_hash
-      })
-
-      return {
-        user
-      }
-    } else {
+    if (!userExists) {
       throw new NoExistsUsersError()
+    }
+
+    // Só criptografa a senha se ela foi fornecida
+    let password_hash: string | undefined;
+    if (password) {
+      password_hash = await hash(password, 6);
+    }
+
+    // Monta os dados para atualização, incluindo senha apenas se fornecida
+    const updateData: any = {
+      name,
+      email,
+      cpf,
+      phone
+    };
+
+    // Só inclui a senha se ela foi fornecida
+    if (password_hash) {
+      updateData.password_hash = password_hash;
+    }
+
+    const user = await this.userRepository.updateSecretary(id, updateData);
+
+    return {
+      user
     }
   }
 }
